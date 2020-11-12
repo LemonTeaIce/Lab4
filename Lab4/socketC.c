@@ -1,21 +1,24 @@
 #include <stdio.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
+#include <arpa/inet.h> // inet_addr
+#include <string.h>//strlen
+#include <unistd.h>
 
 int main(int argc,char *argv[])
 {
  int socket_desc;
  struct sockaddr_in server;
+ char *message, server_reply[2000];
 
  //Create socket
  socket_desc = socket(AF_INET,SOCK_STREAM,0);
  if(socket_desc == -1)
  {
-  printf("Colud not create socket");
+  printf("Could not create socket\n");
  }
- puts("Created socket");
+ puts("Created socket\n");
 
- server.sin_addr.s_addr = inet_addr("192.168.0.10");
+ server.sin_addr.s_addr = inet_addr("192.168.0.10");//IP address serverVM
  server.sin_family = AF_INET;
  server.sin_port = htons(22);
 
@@ -27,5 +30,25 @@ int main(int argc,char *argv[])
  }
 
  puts("Connected");
+
+ //Send some data
+ message = "connect";
+ if(send(socket_desc,message,strlen(message),0)<0)
+ {
+  puts("send data failed");
+  return 1;
+ }
+ puts("Send data Successfully");
+
+ //Receive a reply from server
+ if(recv(socket_desc,server_reply,2000,0)<0)
+ {
+   puts("recv failes");
+ }
+ puts("Reply received\n");
+ puts(server_reply);
+
+ close(socket_desc);
+
  return 0;
 }
